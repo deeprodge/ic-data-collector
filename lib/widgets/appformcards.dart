@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_cropper/image_cropper.dart';
-
 import '../utils/locator.dart';
 import '../utils/language_service.dart';
 
@@ -582,13 +581,13 @@ Widget formcardtextfield4(
                 hint: new Text(hinttextkey),
                 items: surveyList.map((item) {
                   return DropdownMenuItem<String>(
-                    value: item["name"],
+                    value: item['name'].toString(),
                     child: Container(
                       alignment: locator<LanguageService>().currentlanguage == 0
                           ? Alignment.centerLeft
                           : Alignment.centerRight,
                       child: Text(
-                        item["name"],
+                        item['name'].toString(),
                       ),
                     ),
                   );
@@ -646,7 +645,7 @@ Widget formcardtextfield2(
     List surveyList,
     String value,
     bool fieldrequired = false}) {
-  print("nahialist ========= $surveyList");
+  print("provincelist ========= $surveyList");
   return Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(10),
@@ -704,7 +703,7 @@ Widget formcardtextfield2(
                           ? Alignment.centerLeft
                           : Alignment.centerRight,
                       child: Text(
-                        item,
+                        getProvincename(item.toString()),
                       ),
                     ),
                   );
@@ -742,4 +741,202 @@ Widget formcardtextfield2(
       ),
     ),
   );
+}
+Widget formcardtextfield5(
+    {TextInputType keyboardtype,
+      String fieldFor,
+      String initvalue,
+      String headerlablekey,
+      CheckColor radiovalue,
+      String hinttextkey,
+      Function(String) onSaved,
+      Function(String) validator,
+      Function(String) onChanged,
+      FocusNode fieldfocus,
+      TextInputAction textInputAction,
+      void Function(String) onFieldSubmitted,
+      Widget suffix,
+      bool enable,
+      int maxLength,
+      List<TextInputFormatter> inputFormatters,
+      List surveyList,
+      String value,
+      bool fieldrequired = false}) {
+  print("$fieldFor ========== $surveyList");
+  return Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    padding: EdgeInsets.all(10),
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Color.fromRGBO(176, 174, 171, 1), width: 1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              textDirection: locator<LanguageService>().currentlanguage == 0
+                  ? TextDirection.ltr
+                  : TextDirection.rtl,
+              children: <Widget>[
+                completedcheckbox(isCompleted: radiovalue),
+                fieldrequired
+                    ? Text(
+                  '*',
+                  style: TextStyle(color: Colors.red, fontSize: 18),
+                )
+                    : SizedBox(),
+                Flexible(
+                  child: Container(
+                    child: Text(
+                      headerlablekey,
+                      overflow: TextOverflow.visible,
+                      softWrap: true,
+                      style: TextStyle(),
+                      textDirection:
+                      locator<LanguageService>().currentlanguage == 0
+                          ? TextDirection.ltr
+                          : TextDirection.rtl,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8, right: 8, bottom: 10),
+              child: DropdownButtonFormField<String>(
+                hint: new Text(hinttextkey),
+                items: surveyList.map((item) {
+                  return DropdownMenuItem<String>(
+                    value: getItem(item,fieldFor),
+                    child: Container(
+                      alignment: locator<LanguageService>().currentlanguage == 0
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      child: Text(
+                        getName(item,fieldFor),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                // validator: validate,
+                onChanged: onChanged,
+                onSaved: onSaved,
+                value: value,
+              ),
+              // child: TextFormField(
+              //   autofocus: false,
+              //   textDirection: locator<LanguageService>().currentlanguage == 0
+              //       ? TextDirection.ltr
+              //       : TextDirection.rtl,
+              //   enabled: enable,
+              //   keyboardType: keyboardtype,
+              //   initialValue: initvalue?.isEmpty ?? true ? "" : initvalue,
+              //   decoration: InputDecoration(
+              //     errorStyle: TextStyle(color: Colors.redAccent),
+              //     suffixIcon: suffix,
+              //     hintText: hinttextkey?.isEmpty ?? true ? "" : hinttextkey,
+              //   ),
+              //   onSaved: onSaved,
+              //   validator: validator,
+              //   onChanged: onChanged,
+              //   onFieldSubmitted: onFieldSubmitted,
+              //   inputFormatters: inputFormatters,
+              //   maxLength: maxLength,
+              //   maxLengthEnforced: true,
+              //   ///WhitelistingTextInputFormatter.digitsOnly
+              // ),
+            )
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+String getName(item, String fieldFor) {
+  String result;
+  switch (fieldFor) {
+    case "province":
+      result = getProvincename(item.toString());
+      break;
+    case "municipality":
+      result = item['name'].toString();
+      break;
+    case "nahia":
+      result = item['name'].toString();
+      break;
+    case "gozar":
+      result = item['name'].toString();
+      break;
+    default:
+      result = item;
+  }
+  return result;
+}
+
+dynamic getItem(item, String fieldFor) {
+  dynamic result;
+  switch (fieldFor) {
+    case "province":
+      result = item;
+      break;
+    case "municipality":
+      result = item['value'].toString();
+      break;
+    case "nahia":
+      result = item['name'].toString();
+      break;
+    case "gozar":
+      result = item['name'].toString();
+      break;
+    default:
+      result = item;
+  }
+  return result;
+}
+
+String getProvincename(String id) {
+  var result = "";
+  switch (id) {
+    case "01-01":
+      result = 'Kabul';
+      break;
+    case "06-01":
+      result = 'Nangarhar';
+      break;
+    case "33-01":
+      result = 'Kandahar';
+      break;
+    case "10-01":
+      result = 'Bamyan';
+      break;
+    case "22-01":
+      result = 'Daikundi';
+      break;
+    case "17-01":
+      result = 'Kundoz';
+      break;
+    case "18-01":
+      result = 'Balkh';
+      break;
+    case "30-01":
+      result = 'Herat';
+      break;
+    case "03-01":
+      result = 'Parwan';
+      break;
+    case "04-01":
+      result = 'Farah';
+      break;
+    default:
+      result = id;
+  }
+  return result;
 }

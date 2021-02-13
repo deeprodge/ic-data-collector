@@ -24,36 +24,82 @@ class PropertyLocationPage extends StatefulWidget {
 class _PropertyLocationPageState extends State<PropertyLocationPage> {
   LocalPropertySurvey localdata;
   List nahiaList = [];
-
-  List gozarList;
+  List municipalityList = [];
+  List provinceList = [];
+  List gozarList = [];
   bool gozarview = false;
+  bool municipalityview = false;
+  bool nahiaview = false;
   bool _prograssbar = true;
   var _formkey = GlobalKey<FormState>();
 
-  void _nahiaListAPI(String id) async {
+  void _provinceListAPI(String id) async {
 
     final jobsListAPIUrl =
-        'https://apisapi.afghanhabitat.org/mNahiasBySurveyorId?id=${localdata.first_surveyor_name}';
+        'https://apisapi.afghanhabitat.org/mProvinceBySurveyorId?id=${localdata.first_surveyor_name}';
+    print(jobsListAPIUrl);
     final response = await http.get(jobsListAPIUrl);
 
     if (response.statusCode == 200) {
       final data1 = json.decode(response.body);
 
-       if(data1["data"] is String){
-         setState(() {
-           nahiaList.add(data1["data"].toString());
-           _prograssbar = false;
-         }); 
-       }else{
-         setState(() {
-           nahiaList=data1["data"];;
-           _prograssbar = false;
-         });
-       }
-      print("nahia ========== ${data1["data"]},${localdata.taskid},${localdata.first_surveyor_name}");
-      
-      if (nahiaList.length != 0) {}
+      if(data1["data"] is String){
+        setState(() {
+          provinceList.add(data1["data"].toString());
+          _prograssbar = false;
+        });
+      }else{
+        setState(() {
+          provinceList=data1["data"];
+          _prograssbar = false;
+        });
+      }
+
+      print("province ========== ${data1["data"]},${localdata.taskid},${localdata.first_surveyor_name}");
+
     } else {
+      throw Exception('Failed to load jobs from API');
+    }
+  }
+
+  void _municipalityListAPI(String id) async {
+    final jobsListAPIUrl =
+        'https://apisapi.afghanhabitat.org/mMunicipality?province_value=${id}';
+    final response = await http.get(jobsListAPIUrl);
+    if (response.statusCode == 200) {
+      final data1 = json.decode(response.body);
+      setState(() {
+        municipalityList = data1["data"];
+        _prograssbar = false;
+        municipalityview = true;
+
+      });
+      Navigator.pop(context);
+
+      print("Municipality ========== ${data1["data"]},${localdata.taskid},${localdata.first_surveyor_name}");
+
+    } else {
+      throw Exception('Failed to load jobs from API');
+    }
+  }
+
+  void _nahiaListAPI(String id) async {
+
+    final jobsListAPIUrl =
+        'https://apisapi.afghanhabitat.org/mNahia?municipality_value=${id}';
+    final response = await http.get(jobsListAPIUrl);
+
+    if (response.statusCode == 200) {
+      final data1 = json.decode(response.body);
+      setState(() {
+        nahiaList = data1["data"];
+        _prograssbar = false;
+        nahiaview = true;
+      });
+      Navigator.pop(context);
+      print("nahia ========== ${data1["data"]},${localdata.taskid},${localdata.first_surveyor_name}");
+
+    }else {
       throw Exception('Failed to load jobs from API');
     }
   }
@@ -64,13 +110,14 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
     final response = await http.get(jobsListAPIUrl);
     if (response.statusCode == 200) {
       final data1 = json.decode(response.body);
-      print("cozar==== $data1");
-      Navigator.pop(context);
       setState(() {
         gozarList = data1["data"];
         _prograssbar = false;
         gozarview = true;
+
       });
+      Navigator.pop(context);
+      print("Gozar ========== ${data1["data"]},${localdata.taskid},${localdata.first_surveyor_name}");
     } else {
       throw Exception('Failed to load jobs from API');
     }
@@ -345,12 +392,13 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
   void initState() {
     localdata = new LocalPropertySurvey();
     localdata = widget.localdata;
-    localdata.province = '01-01';
-    localdata.city = '1';
+    //localdata.province ;
+    //localdata.city ;
     
     print(
         "initdata, ${localdata.first_surveyor_name}");
-    _nahiaListAPI(localdata.first_surveyor_name);
+    _provinceListAPI(localdata.first_surveyor_name);
+   // _nahiaListAPI(localdata.first_surveyor_name);
     // _gozarListAPI();
     super.initState();
   }
@@ -388,7 +436,52 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
                               Expanded(
                                 child: ListView(
                                   children: <Widget>[
-                                    //province
+                                    //Province dropdown
+                                    formcardtextfield5(
+                                      fieldFor: "province",
+                                      surveyList: provinceList,
+                                      enable: false,
+                                      keyboardtype: TextInputType.text,
+                                      headerlablekey:
+                                      setapptext(key: 'key_province'),
+                                      radiovalue:
+                                      localdata.province?.isEmpty ?? true
+                                          ? CheckColor.Black
+                                          : CheckColor.Green,
+                                      hinttextkey:
+                                      setapptext(key: 'key_select_province'),
+                                      initvalue: localdata.province?.isEmpty ??
+                                          true
+                                          ? ""
+                                          : localdata.province,
+                                      fieldrequired: true,
+                                      validator: (value) {
+                                        if (value.trim().isEmpty) {
+                                          return setapptext(
+                                              key: 'key_field_not_blank');
+                                        }
+                                      },
+                                      onSaved: (value) {
+
+                                        localdata.province = value.trim();
+                                        print("province value =========== $value");
+                                        //_municipalityListAPI(value);
+                                      },
+                                      onChanged: (value) {
+
+                                        localdata.province = value.trim();
+                                        print("province value =========== $value");
+                                        showLoaderDialog(context);
+                                        _municipalityListAPI(value);
+
+                                        setState(() {
+                                          municipalityview = true;
+                                          // _prograssbar = true;
+                                        });
+                                      },
+                                    ),
+
+                                      /*//province
                                     formcardtextfield(
                                       fieldrequired: true,
                                       enable: false,
@@ -402,9 +495,53 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
                                           localdata.province?.isEmpty ?? true
                                               ? CheckColor.Black
                                               : CheckColor.Green,
+                                    ),*/
+
+                                    //Municipality dropdown
+                                    formcardtextfield5(
+                                        fieldFor: "municipality",
+                                        surveyList:
+                                        municipalityview == false ? [] : municipalityList,
+                                        // gozarview == false ? [] : gozarList,
+                                        enable: false,
+                                        keyboardtype: TextInputType.text,
+                                        initvalue:
+                                        localdata.city?.isEmpty ?? true
+                                            ? ""
+                                            : localdata.city,
+                                        headerlablekey:
+                                        setapptext(key: 'key_municipality'),
+                                        hinttextkey:
+                                        setapptext(key: 'key_select_city'),
+                                        radiovalue:
+                                        localdata.city?.isEmpty ?? true
+                                            ? CheckColor.Black
+                                            : CheckColor.Green,
+                                        fieldrequired: true,
+                                        validator: (value) {
+                                          if (value.trim().isEmpty) {
+                                            return setapptext(
+                                                key: 'key_field_not_blank');
+                                          }
+                                        },
+                                      onSaved: (value) {
+                                        localdata.city = value.trim();
+                                        print("city value =========== $value");
+                                        //_nahiaListAPI(value);
+                                      },
+                                      onChanged: (value) {
+                                        localdata.city = value.trim();
+                                        print("city value =========== $value");
+                                        showLoaderDialog(context);
+                                        _nahiaListAPI(value);
+                                        setState(() {
+                                          nahiaview = true;
+                                          // _prograssbar = true;
+                                        });
+                                      },
                                     ),
                                     //municipality
-                                    formcardtextfield(
+                                    /*formcardtextfield(
                                       fieldrequired: true,
                                       enable: false,
                                       initvalue: getCity(localdata.city)?.isEmpty ?? true
@@ -416,10 +553,13 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
                                           localdata.city?.isEmpty ?? true
                                               ? CheckColor.Black
                                               : CheckColor.Green,
-                                    ),
+                                    ),*/
+
                                     //district/nahia
-                                    formcardtextfield2(
-                                      surveyList: nahiaList,
+                                    formcardtextfield5(
+                                      fieldFor: "nahia",
+                                      surveyList:
+                                      nahiaview == false ? [] : nahiaList,
                                       enable: false,
                                       keyboardtype: TextInputType.number,
                                       headerlablekey:
@@ -445,13 +585,13 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
                                       },
                                       onSaved: (value) {
                                         localdata.area = value.trim();
-                                        _gozarListAPI(value);
+                                        //_gozarListAPI(value);
                                       },
                                       onChanged: (value) {
-                                        print("value =========== $value");
+                                        print("nahia value =========== $value");
                                         localdata.area = value.trim();
-                                        _gozarListAPI(value);
                                         showLoaderDialog(context);
+                                        _gozarListAPI(value);
                                         setState(() {
                                           gozarview = true;
                                           // _prograssbar = true;
@@ -459,7 +599,8 @@ class _PropertyLocationPageState extends State<PropertyLocationPage> {
                                       },
                                     ),
                                     //ctu/gozar
-                                    formcardtextfield4(
+                                    formcardtextfield5(
+                                        fieldFor: "gozar",
                                         surveyList:
                                             gozarview == false ? [] : gozarList,
                                         // gozarview == false ? [] : gozarList,
